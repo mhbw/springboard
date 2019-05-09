@@ -28,23 +28,23 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
 
 ### 1. Data Acquisition and Wrangling <a class="anchor" id="Data_Wrangling"></a>
 
-   All data was collected from Natural Stat Trick an invaluable resource currated by Micah McCurdy, who compiles all kinds of data from the Nation Hockey League.
+   All data was collected from Natural Stat Trick an invaluable resource curated by Micah McCurdy, who compiles all kinds of data from the Nation Hockey League.
 
    The only preprocessing I did was to edit some of the header rows in the csv, and added a year column, in order to have that preserved.
 
-   I created the following as my naming convetions for the downloaded files:
+   I created the following as my naming conventions for the downloaded files:
 
 **Year**: refers to the year the season completed PK: means a penalty kill unit PP: means powerplay S: means 5-on-5 or standard play 
 
-**Counts**: are an individual occurance Rates: are something over 60 minutes of time, the length of a standard game
+**Counts**: are an individual occurrence Rates: are something over 60 minutes of time, the length of a standard game
 
 #### Data Cleaning <a class="anchor" id="Data_Cleaning"></a>
 
-   Given the specialty nature of this data set there are few na values; it wasn't as tidy as a kaggle excerise but it was close. The notable exception is Draft information, as a number of players were undrafted. After consideration, I decided to make this a number higher than possible, 1000, which would make it stand out and be important for a linear regression, where as if I make it say, 0, have those players sitting by those drafted first (marked as 1 in the over all draft). A normal draft class has about 370 players, so I wanted this number to be higher, showing that they were ranked lower than the players who were drafted. This was mostly for naught, as in the end it appears to have little over all importance and I dropped the feature all together from some of the models. Draft Year I made into 1900, and team is now 'Undrafted'.
+   Given the specialty nature of this data set there are few na values; it wasn't as tidy as a Kaggle exercise but it was close. The notable exception is Draft information, as a number of players were undrafted. After consideration, I decided to make this a number higher than possible, 1000, which would make it stand out and be important for a linear regression, where as if I make it say, 0, have those players sitting by those drafted first (marked as 1 in the overall draft). A normal draft class has about 370 players, so I wanted this number to be higher, showing that they were ranked lower than the players who were drafted. This was mostly for naught, as in the end it appears to have little overall importance and I dropped the feature all together from some of the models. Draft Year I made into 1900, and team is now 'Undrafted'.
 
    I filled in other values using a set logic based on if the value was a count or a rate. If the value is a count or a percentage of a count, I entered it as zero. If it's a percentage of a rate, then I filled to median. Example of each:
 
-1) **IPP is Individual Point Percentage**, the percentage of goals for that player's team while that player is on the ice that the player earned a point on. For this I filled the NA to 0, becuase logically if you have no points in this category your count would be zero.
+1) **IPP is Individual Point Percentage**, the percentage of goals for that player's team while that player is on the ice that the player earned a point on. For this I filled the NA to 0, because logically if you have no points in this category your count would be zero.
 
 2) **OffZoneStartPer is Offensive Zone Start Percentage**. this is a rate, and thus, simply hasn't been calculated since the player hasn't been given the opportunity to have such a stat created.
 
@@ -55,16 +55,16 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
 
 #### Feature Creation <a class="anchor" id="Feature_Creation"></a>
 
-   I created a number of features for these models, all of which were transformations intended to simplify or otherwise interprerate existing columns with the exception of Age and Total Time on Ice. Age was a calcuation based on birth date, and is important because players performance tends to fall on what's called an 'age curve', where they peak in their late 20s and then trail off. Total Time On Ice matters because it's an important feature both in terms of other variables and as we'll see later is a key indicator of player performance.
+   I created a number of features for these models, all of which were transformations intended to simplify or otherwise interpret existing columns with the exception of Age and Total Time on Ice. Age was a calculation based on birthdate, and is important because players performance tends to fall on what's called an 'age curve', where they peak in their late 20s and then trail off. Total Time On Ice matters because it's an important feature both in terms of other variables and as we'll see later is a key indicator of player performance.
    
-   I also created the target variable 'Fantasy Points' which is the target for all the models and follows the scoring of the fantasy league, and some features around points and minutes per game, as well as points per 60 minutes. I used points per 60 since many in the hockey analytics community have argued that this is more valuable since it shows the rate at which a player performs and smooths out the curves, and I did per game scores thinking that would also show some more clarity; for example showing those that consistantly have multi-point games instead of a flash in the pan with a few solid outings.
+   I also created the target variable 'Fantasy Points' which is the target for all the models and follows the scoring of the fantasy league, and some features around points and minutes per game, as well as points per 60 minutes. I used points per 60 since many in the hockey analytics community have argued that this is more valuable since it shows the rate at which a player performs and smooths out the curves, and I did per game scores thinking that would also show some more clarity; for example showing those that consistently have multi-point games instead of a flash in the pan with a few solid outings.
     
 
 ### 2. Data Exploration<a class="anchor" id="Data_Exploration"></a>
 
 #### Global View <a class="anchor" id="Global_View"></a>
 
-   Globally there are some trends and notacable curves that we can see at the outset. Most notably the points distribution had a bimodal distibution of points with a very long tail to the right. 
+   Globally there are some trends and notacable curves that we can see at the outset. Most notably the points distribution had a bimodal distribution of points with a very long tail to the right. 
    
 ![scoredistro](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/scoredistro.png)
 
@@ -72,7 +72,7 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
    
  ![scoredistro20](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/scoredistro20pg.png) 
    
-   As you can see it is now more unimodal, although it retains the long tail. I also did a quick boxplot of age, height, and weight. These are fairly normally distributed and not particularly remarkabke.
+   As you can see it is now more unimodal, although it retains the long tail. I also did a quick boxplot of age, height, and weight. These are fairly normally distributed and not particularly remarkable.
    
  ![demos](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/demos.png) 
  
@@ -105,29 +105,22 @@ At the bottom of the heap was
 
     sorted_fantasy_value.iloc[230:,]
   
-FA_60                    -0.103418
+FA_60                    -0.103418<br>
+CA_60                    -0.112889<br>
+LDCA_60                  -0.153180<br>
+PPOnTFStarts_60          -0.187461<br>
+Draft_Round              -0.206773<br>
+Round_Pick               -0.224886<br>
+Overall_Draft_Position   -0.231867<br>
+OnTFStarts_60            -0.604720<br>
 
-CA_60                    -0.112889
-
-LDCA_60                  -0.153180
-
-PPOnTFStarts_60          -0.187461
-
-Draft_Round              -0.206773
-
-Round_Pick               -0.224886
-
-Overall_Draft_Position   -0.231867
-
-OnTFStarts_60            -0.604720
-
-   There are two particularly interesting observations here; Corsi (iCF), Fenwick (iFF), and time on ice (metrics with TOI) all coorelate better than values that I'd have guessed would be way more predictive, such as assists or goals, which are actually included in the metric. Corsi and Fenwick are called 'possession metrics', indicating the time a player has the puck, but are better understood as the amount of times a player is **shooting** the puck.  Also interesting is the negative corralation from Draft Position, which I'd have assumed would be similar in value to TOI. 
+   There are two particularly interesting observations here; Corsi (iCF), Fenwick (iFF), and time on ice (metrics with TOI) all correlate better than values that I'd have guessed would be way more predictive, such as assists or goals, which are actually included in the metric. Corsi and Fenwick are called 'possession metrics', indicating the time a player has the puck, but are better understood as the amount of times a player is **shooting** the puck.  Also interesting is the negative correlation from Draft Position, which I'd have assumed would be similar in value to TOI. 
    
    Someplace in between is the values against players (GA_60 = Goals against the player over 60 min, SA_60 shots against the player's team, etc) also have a negative correlation. While I wouldn't have expected a massive link, negative is a bit surprising. My thesis on this (which will go unexplored here because it would be a much different project) is that players work harder if they're doing poorly defensively or playing from behind frequently.
    
    Finally Draft Position seems very low on correlation which fits with the first draft here, but is perhaps even lower than expected. I'd expected the draft metrics to actually have a fairly high correlation but that seems not to be the case. In all would have liked to see more values that were perhaps causal instead of simply correlated. I did a deeper dive, splitting out data based on points per game and found essentially the same thing. 
    
-   What's interesting to me here is that the values are aproximately the same still (Corsi and Fensick specifically sit at the same ranking), but the strength of correlation has dropped off, as has the value of scoring chances, rebounds and takeaways. Witness the top values side by side with respective correlation
+   What's interesting to me here is that the values are approximately the same still (Corsi and Fenwick specifically sit at the same ranking), but the strength of correlation has dropped off, as has the value of scoring chances, rebounds and takeaways. Witness the top values side by side with respective correlation
 
 | Feature      | Total Points           | Points Per Game  | Points Per Game Rank |
 | ------------- |:-------------:| -----:| -----:|
@@ -157,18 +150,18 @@ TOI                    |    0.662317
 iFF_PPIndC            |     0.656715
 
 
-   Interestingly, these values are now 6 out of 10 based around minutes played, where as with over all points it was 4 of 10. This was essentially the inverse of what I'd expected, since I thought that the Points Per Game feature would reduce the dependancy on time.  
+   Interestingly, these values are now 6 out of 10 based around minutes played, where as with over all points it was 4 of 10. This was essentially the inverse of what I'd expected, since I thought that the Points Per Game feature would reduce the dependence on time.  
 
-   What we see here from our quick analysis breaks down into three main points, the first two of which are not particularly surprising. Those primary points are that once you get past the set of players who will be cut, there is a remarkably normal distribution of points, and second that there is little benefit to creating additionaal features around points per game.
+   What we see here from our quick analysis breaks down into three main points, the first two of which are not particularly surprising. Those primary points are that once you get past the set of players who will be cut, there is a remarkably normal distribution of points, and second that there is little benefit to creating additional features around points per game.
 
    The more interesting segment is how correlated time is to a players performance as we can see in the mapping of correlations above.  This is certainly a prime example of how correlation is not causation, but time on ice stands as the most important metric we see above, and will certainly play a role in our models in the next segment. 
    
 
 ### 3. Model Building <a class="anchor" id="Model_Building"></a>
 
-   I went through three classes of models, starting with the classic linear regression, then more advanced ensemble models such as  Random Forests and Gradent Boosted Regressors. I also employed grid search to tune my models as I went. 
+   I went through three classes of models, starting with the classic linear regression, then more advanced ensemble models such as  Random Forests and Gradient Boosted Regressors. I also employed grid search to tune my models as I went. 
 
-   I made an 80/20 split of taining and testing data and began with the linear regression.
+   I made an 80/20 split of training and testing data and began with the linear regression.
 
     model_data.set_index(keys=['Player','Team','Year','Position'],inplace=True)
     Target = model_data.iloc[:,0].values  
@@ -186,14 +179,10 @@ iFF_PPIndC            |     0.656715
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred))) 
     print('Regressor Score:',LinearRegression.score(lin_reg,X_test,  y_test))
 
-Mean Absolute Error: 12.528943815263634
-
-Mean Squared Error: 280.0456937924292
-
-Root Mean Squared Error: 16.734565838181435
-
-Regressor Score: 0.9540330384137164
-
+Mean Absolute Error: 12.528943815263634<br>
+Mean Squared Error: 280.0456937924292<br>
+Root Mean Squared Error: 16.734565838181435<br>
+Regressor Score: 0.9540330384137164<br>
    I considered that an acceptable starting point, but not great. after all, if your mean total points are almost exactly 100, that makes for a deviation of 12.5%. From there I switched to ensemble based methods, starting with a Random Forest Regressor.
    
     regressor = RandomForestRegressor(n_estimators=20, random_state=0)  
@@ -205,7 +194,7 @@ Regressor Score: 0.9540330384137164
     print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))  
     print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))  
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred))) 
-    print('Regreessor Score:',RandomForestRegressor.score(regressor,X_test,  y_test))
+    print('Regressor Score:',RandomForestRegressor.score(regressor,X_test,  y_test))
     
    That did better, but not that much better and actually dropped off at MSE.
 
@@ -249,15 +238,11 @@ Regressor Score: 0.9540330384137164
     
   GridSearchCV took 365.00 seconds for 108 candidate parameter settings.
 Out[10]:
-{'bootstrap': False,
-
- 'max_depth': None,
- 
- 'max_features': 10,
- 
- 'min_samples_split': 2,
- 
- 'n_estimators': 100}
+{'bootstrap': False,<br>
+ 'max_depth': None,<br>
+ 'max_features': 10,<br>
+ 'min_samples_split': 2,<br>
+ 'n_estimators': 100}<br>
  
      best_grid = grid_search.best_estimator_
     y_pred = best_grid.predict(X_test) 
@@ -267,13 +252,10 @@ Out[10]:
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred))) 
     print('Regressor Score:',RandomForestRegressor.score(best_grid,X_test,  y_test))
 
-Mean Absolute Error: 11.198483689538806
-
-Mean Squared Error: 264.4461418239595
-
-Root Mean Squared Error: 16.261800079448754
-
-Regressor Score: 0.9565935634351417
+Mean Absolute Error: 11.198483689538806<br>
+Mean Squared Error: 264.4461418239595<br>
+Root Mean Squared Error: 16.261800079448754<br>
+Regressor Score: 0.9565935634351417<br>
 
    The grid search did improve some but not a ton across the board, other than in MSE, which makes sense as that's the metric it's scoring on.
 
@@ -285,7 +267,7 @@ Regressor Score: 0.9565935634351417
 | Root Mean Squared Error:     |  16.73 | 17.2 | **16.26** | 
 | Regressor Score:    |  0.95 | 0.95 | **0.96** | 
 
-   I next attempted a tree model based on just the primary features, but that ended in dissaster, which I won't bother recording here as all the errors increased, but I think it should be noted. I trimmed to the top 20 features instead of some +200 features thinking that would refine the model by reducing noise, but instead it increased the errors in every metric, which stands as perhaps a lesson in overfitting and definitely one in being too clever by half. 
+   I next attempted a tree model based on just the primary features, but that ended in disaster, which I won't bother recording here as all the errors increased, but I think it should be noted. I trimmed to the top 20 features instead of some +200 features thinking that would refine the model by reducing noise, but instead it increased the errors in every metric, which stands as perhaps a lesson in overfitting and definitely one in being too clever by half. 
    
    I then switched to gradient boosted regressors, and went through a number of iterations there, each of which had improvements.
    
@@ -301,13 +283,10 @@ Regressor Score: 0.9565935634351417
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, clf_pred))) 
     print('Regressor Score:',LinearRegression.score(clf,X_test,  clf_pred))
    
-Mean Absolute Error: 10.126794852921838
-
-Mean Squared Error: 209.87326449686032
-
-Root Mean Squared Error: 14.487003295949798
-
-Regressor Score: 1.0
+Mean Absolute Error: 10.126794852921838<br>
+Mean Squared Error: 209.87326449686032<br>
+Root Mean Squared Error: 14.487003295949798<br>
+Regressor Score: 1.0<br>
 
    Here the features shifted very slightly while the errors decreased. This is the first model to outperform the cross-validated Random Forest Regressor, and perhaps as interesting the first to move to Fenwick up to the top three. Time factors sill dominate but not as much.  Also perhaps the first to have to have significant improvements across the board as far as errors.
 
@@ -343,13 +322,10 @@ Regressor Score: 1.0
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, clf_grid2))) 
     print('Regressor Score:',LinearRegression.score(clf,X_test,  clf_grid2))
 
-Mean Absolute Error: 9.24464315243264  
-
-Mean Squared Error: 177.46336088204436  
-
-Root Mean Squared Error: 13.321537481914179  
-
-Regressor Score: 0.9968268291598121
+Mean Absolute Error: 9.24464315243264<br>
+Mean Squared Error: 177.46336088204436<br>
+Root Mean Squared Error: 13.321537481914179<br>
+Regressor Score: 0.9968268291598121<br>
     
 That makes this slightly better than the others are far as MAE but dramatically better in MSE and RMSE and if you round the regressor score it's a 1
 
@@ -366,7 +342,7 @@ That makes this slightly better than the others are far as MAE but dramatically 
  ![Shap](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/SHAP_value.png) 
    
 
-   I think arguably you could run through deeper regressions with more estimators and get a a closer and closer score, but for our purposes here there's no real need. Also, you could make a decent argument that the standard Gradient Boost works just as well for the effort as going through those iterations of grid searches. 
+   I think arguably you could run through deeper regressions with more estimators and get a closer and closer score, but for our purposes here there's no real need. Also, you could make a decent argument that the standard Gradient Boost works just as well for the effort as going through those iterations of grid searches. 
 
    That said, I'm happy here with the version that we found with the second grid search. Now we'll make this somewhat forward looking and see how teams in the actual fantasy league would have done with this model.
 
@@ -377,7 +353,7 @@ That makes this slightly better than the others are far as MAE but dramatically 
    
  ![scores2019](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/model_perf2019.png) 
 
-   That's a reasonably straight through line, and over all looks about as expected. So how would that track for our league? well pretty much the league would have been static. Only two teams would have seen a significant shift in position, which would have been Paul North Kariya and Datsyuk's Dekes. If the model were accurate and the teams had the same draft they both would have risen two positions in the standings. In fact, if you look at it side by side this way it appears even more static:
+   That's a reasonably straight through line, and overall looks about as expected. So how would that track for our league? well pretty much the league would have been static. Only two teams would have seen a significant shift in position, which would have been Paul North Kariya and Datsyuk's Dekes. If the model were accurate and the teams had the same draft they both would have risen two positions in the standings. In fact, if you look at it side by side this way it appears even more static:
 
 | **Team**     | **Fantasy Points**       | **Modeled_Fantasy_Points**  | **Movement**  |
 | ------------- |-------------:| -----:| -----:| 
@@ -409,7 +385,7 @@ That makes this slightly better than the others are far as MAE but dramatically 
 
    What this shows me here is that the model over all does very well, especially at the mid point, and does poorly with the outliers. Those folks at the top are mostly the top of the league as well, in almost that exact order: Kucherov, Stamkos, Draisaitl, Ovechkin. As Micah McCurdy said once in a talk, 'we can look at the outliers and laugh at them, because that is not where the math is'. 
    
-   The Standout was Mika Zibanejad, who ended up at 11th over all but was drafted at number 198 by the Takoma Park Hotbeasts. 
+   The Standout was Mika Zibanejad, who ended up at 11th overall but was drafted at number 198 by the Takoma Park Holtbeasts. 
 
    Also, fun hockey trivia; many of those top players (Stamkos, Kucherov, Point) are on the best team in the league, who got swept in the first round of the playoffs that barely made it in. This data was all pulled two weeks prior, so I'd like to believe that these players simply regressed to where the model expected them. 
 
@@ -424,10 +400,11 @@ That makes this slightly better than the others are far as MAE but dramatically 
    
 #### Extensions<a class="anchor" id="Future_Work"></a>
 
-   I think this model would benefit from a few things in future iterations, namely a reduction in time features, which caused those to rise to the top, and secondly a normalizing and scaling of the features. The noise in the features could be reduced by normaliziation which would reduce the volatility.
+   I think this model would benefit from a few things in future iterations, namely a reduction in time features, which caused those to rise to the top, and secondly a normalization and scaling of the features. The noise in the features could be reduced by normaliziation which would reduce the volatility.
    
    It would be valuable as well to add more data sources that might have metrics beyond the ones from Natural Stat Trick, to see if there might be more causal data out there, instead of relying on data generated based on coaching decisions. Additionally, sklearn's pipelines could refine this process.
    
-   Finally it might make sense to use outside resources such as an Amazon AWS S3 instance to expand computational power and to see if further gains could be made from deeper trees or grid search. Recall that there were still impovements being made with deeper trees; while that gain was minimal in exchange for the time and resources on a local machine, it would be minimal cost to explore much deeper depth on a virtual host.
+   Finally it might make sense to use outside resources such as an Amazon AWS S3 instance to expand computational power and to see if further gains could be made from deeper trees or grid search. Recall that there were still improvements being made with deeper trees; while that gain was minimal in exchange for the time and resources on a local machine, it would be minimal cost to explore much deeper depth on a virtual host.
    
    Overall I'm proud of this as a strong backbone and first pass, and I will use it in the future to enhance my drafts going forward.  
+
