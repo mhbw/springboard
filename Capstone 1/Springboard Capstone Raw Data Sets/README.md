@@ -11,20 +11,20 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
 ### Table of Contents
 
 1. [Data Acquisition and Wrangling](#Data_Wrangling)
-   i.  [Cleaning](#Data_Cleaning)
-   ii. [Feature Creation](#Feature_Creation)
+  - [Cleaning](#Data_Cleaning)
+  - [Feature Creation](#Feature_Creation)
 
 2. [Data Exploration](#Data_Exploration)
-   i.  [Global View](#Global_View)
-   ii. [Correlations](#cor)
+  - [Global View](#Global_View)
+  - [Correlations](#cor)
     
 3. [Model Building](#Model_Building)
 
 4. [Application: Comparing Model Performance to 2018 Draft](#Application)
 
 5. [Conclusions and Future Work](#Extensions)
-   i.  [Conclusions](#Conclusions)
-   ii. [Extensions](#Future_Work)
+  - [Conclusions](#Conclusions)
+  - [Extensions](#Future_Work)
 
 ### 1. Data Acquisition and Wrangling <a class="anchor" id="Data_Wrangling"></a>
 
@@ -70,7 +70,7 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
 
    I theorized that this was due to teams bringing up young players for trial basis to give them some experience or a try out but keep them under the 20 game cap that would qualify the player for their rookie season (hockey insider baseball: after a certain number of qualified seasons players have to be payed a higher amount, this type of movement lets a team use a player but not have this count as a qualified season and therefore pay the player less). For point of comparison this is the distribution if you were to only look at players above 20 games. 
    
- ![scoredistro20](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/scoredistro20gp.png) 
+ ![scoredistro20](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/scoredistro20pg.png) 
    
    As you can see it is now more unimodal, although it retains the long tail. I also did a quick boxplot of age, height, and weight. These are fairly normally distributed and not particularly remarkabke.
    
@@ -85,35 +85,21 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
     sorted_fantasy_value = corr.iloc[:,-237].sort_values(ascending = False)
     sorted_fantasy_value.iloc[0:15,]
 
-Fantasy Points             1.000000
-
-Total Minutes Played       0.918618
-
-TOI_SIndR                  0.918613
-
-iCF                        0.911318
-
-iFF                        0.909016
-
-Shots                      0.902202
-
-TOI                        0.901212
-
-Total_Assists              0.898010
-
-GP                         0.868733
-
-Fantasy Points Per Game    0.833595
-
-TOI_PPIndC                 0.822900
-
-PPTOI                      0.822900
-
-iSCF                       0.817299
-
-Rebounds_Created           0.809625
-
-Takeaways                  0.807529
+Fantasy Points             1.000000<br>
+Total Minutes Played       0.918618<br>
+TOI_SIndR                  0.918613<br>
+iCF                        0.911318<br>
+iFF                        0.909016<br>
+Shots                      0.902202<br>
+TOI                        0.901212<br>
+Total_Assists              0.898010<br>
+GP                         0.868733<br>
+Fantasy Points Per Game    0.833595<br>
+TOI_PPIndC                 0.822900<br>
+PPTOI                      0.822900<br>
+iSCF                       0.817299<br>
+Rebounds_Created           0.809625<br>
+Takeaways                  0.807529<br>
 
 At the bottom of the heap was
 
