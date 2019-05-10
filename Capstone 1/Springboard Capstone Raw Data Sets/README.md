@@ -23,12 +23,13 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
 4. [Application: Comparing Model Performance to 2018 Draft](#Application)
 
 5. [Conclusions and Future Work](#Extensions)
-  - [Conclusions](#Conclusions)
   - [Extensions](#Future_Work)
+  - [Conclusions](#Conclusions)
+
 
 ### 1. Data Acquisition and Wrangling <a class="anchor" id="Data_Wrangling"></a>
 
-   All data was collected from Natural Stat Trick an invaluable resource curated by Micah McCurdy, who compiles all kinds of data from the Nation Hockey League.
+   All data was collected from Natural Stat Trick an invaluable resource curated by Micah McCurdy, who compiles all kinds of data from the Nation Hockey League. I'm going to outline some of the process here, but you can read a full rundown of my process in this [notebook](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Data%20Wrangling:%20Notebook%201.ipynb).
 
    The only preprocessing I did was to edit some of the header rows in the csv, and added a year column, in order to have that preserved.
 
@@ -50,7 +51,7 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
 
    In essence the logic here is "if you have a NA due to not getting any points, you are marked zero, if you have an NA due to not being on the ice for that metric, you are returned to the mean". I've heard some arguments that you might leave these as na since many of the sklearn models have the ability to deal with NA values and this unfairly 'bulks up' the mean or median, but again this was a fairly limited number of values in any given column (less than 1%) so mostly academic. 
 
-   Finally, I found some pointless or redundant columns ('power play position', etc) which I dropped wholesale.
+   Finally, I found some pointless or redundant columns ('power play position', etc) which I dropped wholesale. 
 
 
 #### Feature Creation <a class="anchor" id="Feature_Creation"></a>
@@ -85,81 +86,107 @@ For this case study I took the ESPN fantasy league that I play in as a guide, an
     sorted_fantasy_value = corr.iloc[:,-237].sort_values(ascending = False)
     sorted_fantasy_value.iloc[0:15,]
 
-Fantasy Points             1.000000<br>
-Total Minutes Played       0.918618<br>
-TOI_SIndR                  0.918613<br>
-iCF                        0.911318<br>
-iFF                        0.909016<br>
-Shots                      0.902202<br>
-TOI                        0.901212<br>
-Total_Assists              0.898010<br>
-GP                         0.868733<br>
-Fantasy Points Per Game    0.833595<br>
-TOI_PPIndC                 0.822900<br>
-PPTOI                      0.822900<br>
-iSCF                       0.817299<br>
-Rebounds_Created           0.809625<br>
-Takeaways                  0.807529<br>
+| Feature      | Correlation           |
+| ------------- |:-------------:|
+|Total Minutes Played      | 0.918|<br>
+|TOI_SIndR             |     0.918|<br>
+|iCF                    |    0.911|<br>
+|iFF                     |   0.909|<br>
+|Shots                    |  0.902|<br>
+|TOI                 |       0.901|<br>
+|Total_Assists        |      0.898|<br>
+|GP                     |    0.869|<br>
+|Fantasy Points Per Game |   0.834|<br>
+|TOI_PPIndC               |  0.823|<br>
+|PPTOI                     | 0.823|<br>
+|iSCF                       |0.817|<br>
+|Rebounds_Created     |      0.81|<br>
+|Takeaways             |     0.808|<br>
 
 At the bottom of the heap was
 
     sorted_fantasy_value.iloc[230:,]
-  
-FA_60                    -0.103418<br>
-CA_60                    -0.112889<br>
-LDCA_60                  -0.153180<br>
-PPOnTFStarts_60          -0.187461<br>
-Draft_Round              -0.206773<br>
-Round_Pick               -0.224886<br>
-Overall_Draft_Position   -0.231867<br>
-OnTFStarts_60            -0.604720<br>
+| Feature      | Correlation           |
+| ------------- |:-------------:|
+|FA_60                   | -0.103|<br>
+|CA_60                    |-0.113|<br>
+|LDCA_60                  |-0.153|<br>
+|PPOnTFStarts_60          |-0.187|<br>
+|Draft_Round              |-0.207|<br>
+|Round_Pick               |-0.225|<br>
+|Overall_Draft_Position   |-0.232|<br>
+|OnTFStarts_60            |-0.605|<br>
 
    There are two particularly interesting observations here; Corsi (iCF), Fenwick (iFF), and time on ice (metrics with TOI) all correlate better than values that I'd have guessed would be way more predictive, such as assists or goals, which are actually included in the metric. Corsi and Fenwick are called 'possession metrics', indicating the time a player has the puck, but are better understood as the amount of times a player is **shooting** the puck.  Also interesting is the negative correlation from Draft Position, which I'd have assumed would be similar in value to TOI. 
    
    Someplace in between is the values against players (GA_60 = Goals against the player over 60 min, SA_60 shots against the player's team, etc) also have a negative correlation. While I wouldn't have expected a massive link, negative is a bit surprising. My thesis on this (which will go unexplored here because it would be a much different project) is that players work harder if they're doing poorly defensively or playing from behind frequently.
    
-   Finally Draft Position seems very low on correlation which fits with the first draft here, but is perhaps even lower than expected. I'd expected the draft metrics to actually have a fairly high correlation but that seems not to be the case. In all would have liked to see more values that were perhaps causal instead of simply correlated. I did a deeper dive, splitting out data based on points per game and found essentially the same thing. 
+   Finally Draft Position seems very low on correlation which fits with the first draft here, but is perhaps even lower than expected. Charted here are the drafted vs. undrafted players (drafted being the group marked '1'), as well as the correlation. As you can see there are wide bands on each, and 'drafted' actually has a very slight negative correlation to fantasy points.
+   
+ ![drafted2](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/drafted_undrafted.png) 
+ 
+    sorted_fantasy_value.loc['drafted']
+ -0.008
+   
+   I'd expected the draft metrics to actually have a fairly high correlation but that seems not to be the case. Here is the charting of overall draft position compared to points per season, with the undrafted players removed. As you can see, the regression line in the middle slopes downward very gently, and over all this is a loose grouping. 
+   
+   
+ ![drafted3](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/draft_position.png)    
+   
+   I also broke out scores by position, expecting that this would have a strong mapping of scores. while there was a distinct grouping, I noticed two trends. 
+   
+   1) The data has a heavy rightward skew
+   2) there was something of a bimodal distribution of the fantasy values
+   
+I chalked that up to two different effects from longevity and number of games played. If you play at a high value for your position you play for more years and more games, hence the tail. The distribution is the effect of the earlier 20 game rule. Here we see the positions without control for number of games played.
+
+![score_per](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/score_distro1.png) 
+
+![score_per](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/score_distro2.png) 
+
+   
+   In all would have liked to see more values that were perhaps causal instead of simply correlated. I did a deeper dive, splitting out data based on points per game and found essentially the same thing. 
    
    What's interesting to me here is that the values are approximately the same still (Corsi and Fenwick specifically sit at the same ranking), but the strength of correlation has dropped off, as has the value of scoring chances, rebounds and takeaways. Witness the top values side by side with respective correlation
 
 | Feature      | Total Points           | Points Per Game  | Points Per Game Rank |
 | ------------- |:-------------:| -----:| -----:|
-| TOI_SIndR     |  0.918613 | 0.689959 | 6th |
-| iCF      | 0.911318     |   0.714986 | 2nd |
-| iFF | 0.909016     |    0.714448 | 3rd |
-| TOI    |  0.901212 | 0.662317 | 9th |
-| GP     | 0.868733    |   0.579444 | 20th |
-| TOI_PPIndC  | 0.822900     |    0.719050 | 1st |
-| iSCF      | 0.822900 | 0.649937 | 11th |
-| Rebounds_Created      | 0.809625     |   0.636078 | 15th |
-| Takeaways | 0.807529     |    0.643104 | 14th |
+| TOI_SIndR     |  0.919 | 0.69 | 6th |
+| iCF      | 0.911     |   0.715 | 2nd |
+| iFF | 0.909     |    0.714 | 3rd |
+| TOI    |  0.901 | 0.662 | 9th |
+| GP     | 0.869    |   0.579 | 20th |
+| TOI_PPIndC  | 0.823     |    0.719 | 1st |
+| iSCF      | 0.823 | 0.65 | 11th |
+| Rebounds_Created      | 0.81     |   0.636 | 15th |
+| Takeaways | 0.808     |    0.643 | 14th |
 
 Here are the top ten correlated values directly for Points Per Game:
 
 | Feature       | Correlation to Points Per Game         | 
 | ------------- |:-------------:| 
-TOI_PPIndC    |             0.719050
-iCF            |            0.714986
-iFF            |            0.714448
-TOI_GP         |            0.701839
-Total Minutes Played   |    0.689966
-TOI_SIndR             |     0.689959
-PPTOI_GP              |     0.682719
-iSCF_PPIndC            |    0.680967
-TOI                    |    0.662317
-iFF_PPIndC            |     0.656715
+TOI_PPIndC    |             0.719
+iCF            |            0.715
+iFF            |            0.714
+TOI_GP         |            0.702
+Total Minutes Played   |    0.69
+TOI_SIndR             |     0.69
+PPTOI_GP              |     0.683
+iSCF_PPIndC            |    0.681
+TOI                    |    0.662
+iFF_PPIndC            |     0.657
 
 
    Interestingly, these values are now 6 out of 10 based around minutes played, where as with over all points it was 4 of 10. This was essentially the inverse of what I'd expected, since I thought that the Points Per Game feature would reduce the dependence on time.  
 
    What we see here from our quick analysis breaks down into three main points, the first two of which are not particularly surprising. Those primary points are that once you get past the set of players who will be cut, there is a remarkably normal distribution of points, and second that there is little benefit to creating additional features around points per game.
 
-   The more interesting segment is how correlated time is to a players performance as we can see in the mapping of correlations above.  This is certainly a prime example of how correlation is not causation, but time on ice stands as the most important metric we see above, and will certainly play a role in our models in the next segment. 
+   The more interesting segment is how correlated time is to a players performance as we can see in the mapping of correlations above.  This is certainly a prime example of how correlation is not causation, but time on ice stands as the most important metric we see above, and will certainly play a role in our models in the next segment. For a more full and detailed version of these steps, as well as the code, you can see the [second notebook here](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Data%20Exploration%20and%20Story%20Telling:%20Notebook%202.ipynb).
    
 
 ### 3. Model Building <a class="anchor" id="Model_Building"></a>
 
-   I went through three classes of models, starting with the classic linear regression, then more advanced ensemble models such as  Random Forests and Gradient Boosted Regressors. I also employed grid search to tune my models as I went. 
+   I went through three classes of models, starting with the classic linear regression, then more advanced ensemble models such as  Random Forests and Gradient Boosted Regressors. I also employed grid search to tune my models as I went. Again, this segment is mostly top lines and essentials, while code and detailed elements are in the [third notebook](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Model%20Building:%20Notebook%203.ipynb)
 
    I made an 80/20 split of training and testing data and began with the linear regression.
 
@@ -179,10 +206,10 @@ iFF_PPIndC            |     0.656715
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred))) 
     print('Regressor Score:',LinearRegression.score(lin_reg,X_test,  y_test))
 
-Mean Absolute Error: 12.528943815263634<br>
-Mean Squared Error: 280.0456937924292<br>
-Root Mean Squared Error: 16.734565838181435<br>
-Regressor Score: 0.9540330384137164<br>
+Mean Absolute Error: 12.529<br>
+Mean Squared Error: 280.046<br>
+Root Mean Squared Error: 16.735<br>
+Regressor Score: 0.954<br>
    I considered that an acceptable starting point, but not great. after all, if your mean total points are almost exactly 100, that makes for a deviation of 12.5%. From there I switched to ensemble based methods, starting with a Random Forest Regressor.
    
     regressor = RandomForestRegressor(n_estimators=20, random_state=0)  
@@ -252,10 +279,10 @@ Out[10]:
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred))) 
     print('Regressor Score:',RandomForestRegressor.score(best_grid,X_test,  y_test))
 
-Mean Absolute Error: 11.198483689538806<br>
-Mean Squared Error: 264.4461418239595<br>
-Root Mean Squared Error: 16.261800079448754<br>
-Regressor Score: 0.9565935634351417<br>
+Mean Absolute Error: 11.198<br>
+Mean Squared Error: 264.446<br>
+Root Mean Squared Error: 16.262<br>
+Regressor Score: 0.957<br>
 
    The grid search did improve some but not a ton across the board, other than in MSE, which makes sense as that's the metric it's scoring on.
 
@@ -283,9 +310,9 @@ Regressor Score: 0.9565935634351417<br>
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, clf_pred))) 
     print('Regressor Score:',LinearRegression.score(clf,X_test,  clf_pred))
    
-Mean Absolute Error: 10.126794852921838<br>
-Mean Squared Error: 209.87326449686032<br>
-Root Mean Squared Error: 14.487003295949798<br>
+Mean Absolute Error: 10.127<br>
+Mean Squared Error: 209.873<br>
+Root Mean Squared Error: 14.488<br>
 Regressor Score: 1.0<br>
 
    Here the features shifted very slightly while the errors decreased. This is the first model to outperform the cross-validated Random Forest Regressor, and perhaps as interesting the first to move to Fenwick up to the top three. Time factors sill dominate but not as much.  Also perhaps the first to have to have significant improvements across the board as far as errors.
@@ -322,10 +349,10 @@ Regressor Score: 1.0<br>
     print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, clf_grid2))) 
     print('Regressor Score:',LinearRegression.score(clf,X_test,  clf_grid2))
 
-Mean Absolute Error: 9.24464315243264<br>
-Mean Squared Error: 177.46336088204436<br>
-Root Mean Squared Error: 13.321537481914179<br>
-Regressor Score: 0.9968268291598121<br>
+Mean Absolute Error: 9.245<br>
+Mean Squared Error: 177.463<br>
+Root Mean Squared Error: 13.322<br>
+Regressor Score: 0.997<br>
     
 That makes this slightly better than the others are far as MAE but dramatically better in MSE and RMSE and if you round the regressor score it's a 1
 
@@ -334,10 +361,9 @@ That makes this slightly better than the others are far as MAE but dramatically 
 | Mean Absolute Error:    |  12.53 | 11.2 | 10.13 | 10.26 | **9.24** |
 | Mean Squared Error:    |  280.05 | 264.45 | 209.94 |  220.11 | **177.46** |
 | Root Mean Squared Error:     |  16.73 | 16.26 |  14.49 | 14.84 | **13.32** |
-| Regressor Score:    |  0.95 | 0.96 |  **1** | 0.99 |0.996|
+| Regressor Score:    |  0.95 | 0.96 |  **1** | 0.99 |0.997|
 
-   Here Is a visual showing how the impact of each of the top features impacts the scores:
-   
+   I used a package called [SHAP](https://github.com/slundberg/shap) to create a graphic of SHAP values, which assign a value to each feature that show how they effect the output of the model in a simplified way. These values represent 'a feature's responsibility for a change in the model output'. So for example, Time on ice can change a players point total by as much as 40 total points, -15 points in some cases, and as high as +25 for some players. Over all this is gives a tangable snapshot of how features impact the model's output.
 
  ![Shap](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/SHAP_value.png) 
    
@@ -388,16 +414,12 @@ That makes this slightly better than the others are far as MAE but dramatically 
    The Standout was Mika Zibanejad, who ended up at 11th overall but was drafted at number 198 by the Takoma Park Holtbeasts. 
 
    Also, fun hockey trivia; many of those top players (Stamkos, Kucherov, Point) are on the best team in the league, who got swept in the first round of the playoffs that barely made it in. This data was all pulled two weeks prior, so I'd like to believe that these players simply regressed to where the model expected them. 
-
+   
+   Personally this was my favorite part of the project, and there are many many more details on the league and performance in the [league notbook](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Model%20Building:%20Notebook%203.ipynb), if you'd like to see more on specific rounds and players.
    
 ### 5. Conclusions and Future Work <a class="anchor" id="Extensions"></a>
 
-#### Conclusions <a class="anchor" id="Conclusions"></a>
 
-   After comparing this model to my final results, I am quite happy with how it did over all. Not only did it get the league results mostly in line to their actual standings I feel it did well at predicting the players, despite being somewhat conservative.  I feel the real value for this model would be for someone who was middle of the pack or new to the game and needed help. For example London Bacon Blades managed to grab two of the top over all performers but still dropped off and managed to end at 11th in basically every metric. LBB was managed by a new NHL fan who had only watched one season before this, so I think it speaks to the knowledge required to do well in these types of contests; you have to have the knowledge to pick well for 23 rounds, not just the first two. 
-   
-   This model would do well to help a player like that who could use help in later rounds. It might also help find the draft value for players like Zibanejad and Huberdeau who should have been taken earlier. 
-   
 #### Extensions<a class="anchor" id="Future_Work"></a>
 
    I think this model would benefit from a few things in future iterations, namely a reduction in time features, which caused those to rise to the top, and secondly a normalization and scaling of the features. The noise in the features could be reduced by normaliziation which would reduce the volatility.
@@ -405,6 +427,12 @@ That makes this slightly better than the others are far as MAE but dramatically 
    It would be valuable as well to add more data sources that might have metrics beyond the ones from Natural Stat Trick, to see if there might be more causal data out there, instead of relying on data generated based on coaching decisions. Additionally, sklearn's pipelines could refine this process.
    
    Finally it might make sense to use outside resources such as an Amazon AWS S3 instance to expand computational power and to see if further gains could be made from deeper trees or grid search. Recall that there were still improvements being made with deeper trees; while that gain was minimal in exchange for the time and resources on a local machine, it would be minimal cost to explore much deeper depth on a virtual host.
-   
-   Overall I'm proud of this as a strong backbone and first pass, and I will use it in the future to enhance my drafts going forward.  
+    
 
+#### Conclusions <a class="anchor" id="Conclusions"></a>
+
+   This type of model could be a valuable product as an introductory primer, and could be marketed to new players.  For example London Bacon Blades was managed by a new NHL fan who had only watched one season before this. The manager drafted two of the top over all performers but still dropped off ended at 11th in basically every metric. Had they had such a product, they would have perhaps been better able to make experienced moves like Takoma Park Holtbeasts; a former player, who as we noted above picked up a top overall player who he found at pick number 198.
+     
+   Most importantly, this capstone shows that while it is [most difficult to predict the outcome of a hockey game](https://www.vox.com/videos/2017/6/5/15740632/luck-skill-sports) it is possible to model player performance.  Not only did it get the league results mostly in line to their actual standings it did well at predicting the players, despite being somewhat conservative.  
+   
+   Both of these findings show that there is real value in the model and the product, and machine learning can lend tangible insights in a difficult field. 
