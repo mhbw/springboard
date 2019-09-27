@@ -46,35 +46,35 @@ The Target Metric, Fantasy Points, are not evenly distributed as they are across
   Time on ice (left) remains the constant for forecasting points, as  predictive and almost as correlated as core possession metric, Fenwick (right). 
 
    
- ![pbs](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/pointsbyshots.pneg) 
+ ![pbs](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/pointsbyshots.pneg.png) 
  
- ![sbs](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/pointsbytime.pneg) 
+ ![sbs](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/pointsbytime.pneg.png) 
  
  
  #### Applied Market Forecasting Theories: Moving Average Convergence   <a class="anchor" id="cor"></a>
  
- 	The 'Hot Hand Theory' might be the original piece of sports analytics work, and certainly the most discussed and dissected. Here we propose a slightly different take, which is to apply financial methods of finding trends to identify values. While there is significant value in a players past overall performance, but being able to spot immediate trends creates a near term arbitrage opportunity where players are undervalued but on an upswing.  
+ The 'Hot Hand Theory' might be the original piece of sports analytics work, and certainly the most discussed and dissected. Here we propose a slightly different take, which is to apply financial methods of finding trends to identify values. While there is significant value in a players past overall performance, but being able to spot immediate trends creates a near term arbitrage opportunity where players are undervalued but on an upswing.  
  
- 	The theory in this case is that since time on ice and time on the power play are the biggest indicators of success, rivaled only by possession metrics, if a model could detect an upward trend it could find undervalued players in advance and forecast positive events.  
+ The theory in this case is that since time on ice and time on the power play are the biggest indicators of success, rivaled only by possession metrics, if a model could detect an upward trend it could find undervalued players in advance and forecast positive events.  
  	
- 	While global movements are relatively rare, line shifts are frequent, sometimes happening in-game, and identifying when a player is seeing increased deployment over their previous shifts is highly valuable. A signal metric was developed to identify those events. 
+ While global movements are relatively rare, line shifts are frequent, sometimes happening in-game, and identifying when a player is seeing increased deployment over their previous shifts is highly valuable. A signal metric was developed to identify those events. 
 
 
-	Here is a random sample of players with the positive (black arrow) and negative (red arrow) signal markers overlayed on top of the moving averages (blue and dark blue lines). Note how the black arrow frequently proceeds a distinct upward trend in the moving averages. 
+Here is a random sample of players with the positive (black arrow) and negative (red arrow) signal markers overlayed on top of the moving averages (blue and dark blue lines). Note how the black arrow frequently proceeds a distinct upward trend in the moving averages. 
 	
- ![dh](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/DHMP_intial1.pneg) 
+ ![dh](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/DHMP_intial1.png) 
  
- ![mai](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/MA_intial1.pneg) 
+ ![mai](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/MA_intial1.png) 
  
 That said the model can be ‘psyched’ out, as seem here, by highly uneven deployment which could be caused by a number of factors. 
 
- ![zk](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/ZPMP_intial1.pneg) 
+ ![zk](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/ZPMP_intial1.png) 
    
 Most promising, when used in an OLS model both signals had very positive linear outcomes, adding nearly a half point, or a quarter standard deviation improvement for a positive signal. 
 
- ![ff](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/olsff.pneg) 
+ ![ff](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/olsff.png) 
  
-  ![toi](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/olstoi.pneg) 
+  ![toi](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/olstoi.png) 
 
    
 
@@ -82,38 +82,38 @@ Most promising, when used in an OLS model both signals had very positive linear 
 
    Initially three models were employed; Stochastic Gradient Decent, Random Forests, and Gradient Boosted Regressors. These failed in spectacular fashion. Below is a chart of the predicted vs actual values with the best performing model of that group.
    
-![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/xgboost_tree.pneg) 
+![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/xgboost_tree.png) 
 
  The problem here is two-fold: one, upon performance of a Variance Inflation Factor (VIF) analysis it was confirmed that the features were highly correlated amongst themselves and thus multicollinear, the models have a hard time sifting out worthwhile metrics when the target variables are so skewed and thus the results end as an amorphous blob with most values being projected as the mean with little ability to create separation. This is another charting of the results which shows this in clearer fashion.
 
-![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/blob.pneg) 
+![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/blob.png) 
 
 In order to try and deal with these issues a new model was employed using Poisson Regression Model which is better suited to the purpose given the timebound nature of the contests with a discrete probability of each event occurring. While this did not yield a perfect distribution it was significantly better at predicting the range of values that might occur. 
 
-![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonblob.pneg) 
+![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonblob.png) 
 
 
 
 
 ### 4. Application: FantasyCruncher <a class="anchor" id="Application"></a>
 
-	In order to further validate the success of this program the model was build it was tested using FantasyCruncher, a tool which is considered an essential lineup optimizer by most daily fantasy sports professionals. This site does the difficult leg work of maximizing points per lineup, a computationally difficult problem, while allowing you to easily import your own models and calculate line performance based on those. 
+In order to further validate the success of this program the model was build it was tested using FantasyCruncher, a tool which is considered an essential lineup optimizer by most daily fantasy sports professionals. This site does the difficult leg work of maximizing points per lineup, a computationally difficult problem, while allowing you to easily import your own models and calculate line performance based on those. 
 
-	Five days were chosen at random, three of which had data in FantasyCruncher, 2/23/2016, 5/11/2016, and 10/27/2018. Then the model was imported and then compared to a generic projection provided by FantasyCruncher.
+Five days were chosen at random, three of which had data in FantasyCruncher, 2/23/2016, 5/11/2016, and 10/27/2018. Then the model was imported and then compared to a generic projection provided by FantasyCruncher.
 
  In naïve contests without player input, the model did not perform significantly differently than the off-the-shelf projections, and in fact was de-prioritized by the platform. Below is a comparison of the naïve lineups for the model (upper left) and FantasyCruncher (lower right): 
- ![nm](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive1.pneg) 
+ ![nm](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive1.png) 
 
-![fc1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive2.pneg) 
+![fc1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive2.png) 
 
  
- 	 That said, the story is wildly different when there is minimal participation by a human. In these contests I told FantasyCruncher to limit the goalies to two options, chosen based on being the starting goalie for the team favored to win by the Las Vegas Casinos. I set the same assignment for the FantasyCruncher model but the scores were wildly different in this case. The Non-Naïve model is on the left, FantasyCruncher on the right.
+The story is wildly different when there is minimal participation by a human. In these contests I told FantasyCruncher to limit the goalies to two options, chosen based on being the starting goalie for the team favored to win by the Las Vegas Casinos. I set the same assignment for the FantasyCruncher model but the scores were wildly different in this case. The Non-Naïve model is on the left, FantasyCruncher on the right.
 
-	In this case both set of contests would have cashed but the model would take a much higher prize while the in-house version would have scraped by.
+In this case both set of contests would have cashed but the model would take a much higher prize while the in-house version would have scraped by.
 
- ![nm1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/non_naive1.pneg) 
+ ![nm1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/non_naive1.png) 
 
-![fc2](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonnaive2.pneg) 
+![fc2](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonnaive2.png) 
 
  
 
