@@ -41,7 +41,7 @@ The Target Metric, Fantasy Points, are not evenly distributed as they are across
 ![scoredistro](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/scoredistro.png)
 
  
-![dailyscoredistro](https://github.com/mhbw/springboard/blob/master/Capstone%202/notebooks_datasets/images/gamesdistro.png) 
+![dailyscoredistro](Capstone_2/images/scoredistro.png) 
    
   Time on ice (left) remains the constant for forecasting points, as  predictive and almost as correlated as core possession metric, Fenwick (right). 
 
@@ -53,7 +53,7 @@ The Target Metric, Fantasy Points, are not evenly distributed as they are across
  
  #### Applied Market Forecasting Theories: Moving Average Convergence   <a class="anchor" id="cor"></a>
  
- 	The 'Hot Hand Theory' might be the original piece of sports analytics work, and certainly the most discussed and dissected. Here we propose a slightly different take, which is to apply financial methods of finding trends to identify values. While there is significant value in a players past overall performance, but being able to spot immediate trends creates a near term arbitrage opportunity where players are undervalued but on an upswing.  
+ 	The 'Hot Hand Theory' might be the original piece of sports analytics work, and certainly the most discussed and dissected. Here we propose a slightly different take, which is to apply financial methods of finding trends to identify values. While there is significant value in a players past overall performance, but being able to spot immediate trends creates a near term arbitrage opportunity where players are undervalued but on an upswing.  
  
  	The theory in this case is that since time on ice and time on the power play are the biggest indicators of success, rivaled only by possession metrics, if a model could detect an upward trend it could find undervalued players in advance and forecast positive events.  
  	
