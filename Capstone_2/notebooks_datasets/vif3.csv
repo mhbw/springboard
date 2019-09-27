@@ -1,0 +1,22 @@
+,VIF Factor,features
+85,1.533962896,FF_signal
+84,1.714710515,toi_signal
+18,1.917936371,onGF_avg_lf
+35,2.195518282,hat_trick_avg_lf
+77,2.221838229,hat_trick_avg_ltwen
+38,2.443713633,skater_pptoi_percentage_avg_lf
+60,2.932131919,onGF_avg_ltwen
+8,3.518668483,iHF_avg_lf
+50,3.640318587,iHF_avg_ltwen
+30,3.877852123,onGF_pp_avg_lf
+22,4.950227057,onFA_state_avg_lf
+80,5.322137653,skater_pptoi_percentage_avg_ltwen
+29,5.377713867,ixG_avg_lf
+21,5.941243119,onxGF_avg_lf
+24,5.979295593,G_avg_lf
+25,6.9678004,Points_avg_lf
+72,7.154844582,onGF_pp_avg_ltwen
+9,7.505671258,OZS_comp_avg_lf
+66,7.690959653,G_avg_ltwen
+63,8.504177991,onxGF_avg_ltwen
+71,9.434470657,ixG_avg_ltwen
