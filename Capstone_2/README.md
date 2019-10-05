@@ -184,7 +184,9 @@ Again, the typical lower bound for cashing in in a contest is 35 points so given
  
 
 That said, the story is wildly different given even minimal human supervision. In these examples, FantasyCruncher was limited to two options in the goalie position, selected solely based on being the starting goalie for the team most favored to win by the Las Vegas Casinos. I set the same assignment for the FantasyCruncher model but the scores were wildly different in this case. The Non-Naïve model (upper) would have done significantly better than FantasyCruncher alone (lower).
- ![nm1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/non_naive1.png) 
+
+
+![nm1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/non_naive1.png) 
 
 ![fc2](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonnaive2.png) 
 
