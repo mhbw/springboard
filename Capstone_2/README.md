@@ -129,7 +129,7 @@ R2 shows the predictive power of a model on a 0-1.00 scale, while the other valu
 
 Upon inspection it appeared the problems were two-fold: first, a Variance Inflation Factor (VIF) analysis confirmed that the features were highly correlated amongst themselves and thus multicollinear. This meant that key features were repeating themselves and creating signal where there was none. This chart shows the most correlated values. A VIF score of below 5-10 is considered acceptable; of the 228 features we charted here, 7% were under 5, and 15% were below 10. 
 
-![vif](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/vif.png?v=4&s=100)
+![vif](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/vif.png =100x20)
 
 Presented another way, this is a correlation matrix showing the correlation of values amongst each other. Lighter values represent higher correlation: note how light the chart becomes in the later levels. 
 
