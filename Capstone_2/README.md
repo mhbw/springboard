@@ -2,22 +2,29 @@
 
 ### Introduction
 
-By even the most conservative estimates daily fantasy sports is a multi-billion dollar industry, the largest volume of which is moved for fantasy football but the sites at this point cover everything down to e-sports and MMA.
- 	
-For this capstone project the intent was to cover if machine learning models could be trained to be sufficiently competitive for daily fantasy contests in hockey, a sport that is widely considered the most difficult to predict due to the level of variance, interaction among players, and general ‘puck luck’. 
+The objective of this capstone project was to create and deploy machine learning models that would be able to successfully predict player performance in daily fantasy hockey, an online contest where the objective is to choose the highest scoring lineup in a series of NHL contests. This is a constrained optimization problem in that contest entrants are provided a ‘budget’ of $50,000 to spend on 8 NHL players, who’s salary for a contest could range from $2,500 to $9,000. 
+
+This is no easy task since hockey as a sport is widely considered the most difficult to predict due to the level of interaction among players, difficulty isolating events, and general ‘puck luck’. 1 The value proposition is that by most conservative estimates daily fantasy sports is a multi-billion dollar industry, and even the smaller contests offer value with daily NHL contests paying out up to $5,000 for a first prize for a $3 entry.2
 
 ### Table of Contents
 
 1. [Data Acquisition and Wrangling](#Data_Wrangling)
   - [Collection](#Data_Collection)
+  - [Terms](#Terms)
+  - [Processing](#Processing)
 
 2. [Data Exploration](#Data_Exploration)
   - [Point Distributions](#point_distro)
   - [Applied Market Forecasting Theories: Moving Average Convergence ](#cor)
     
 3. [Model Building](#Model_Building)
+  - [Initial Failure](#Initial _Failure)
+  - [Moderate Success](#Moderate_Success)
+
 
 4. [Application: FantasyCruncher](#Application)
+  - [Naive Application](#Naive_Application)
+  - [Non-Naive Application](#NonNaive_Application)
 
 5. [Conclusions](#Conclusions)
   - [Extensions](#Future_Work)
@@ -26,16 +33,30 @@ For this capstone project the intent was to cover if machine learning models cou
 
 ### 1. Data Acquisition and Wrangling <a class="anchor" id="Data_Wrangling"></a>
 
-   The data scraped from the NHL’s unofficial API, and then processed using scripts developed by the team at [EvolvingHockey](https://evolving-hockey.com), an invaluable resource for daily results. 
 
-#### Data Collection <a class="anchor" id="Data_Collection"></a>
+The data scraped from the NHL’s unofficial API, and then processed using scripts developed by the team at [EvolvingHockey](https://evolving-hockey.com), an invaluable resource for daily results. 
 
-   For this project most of the data was in a raw format from the API and required compiling on a player-per-game instance. That was assisted by the Evolving Hockey scripts, but also required a PostgreSQL instance be stood up to house the data and easily access it, as well as create rank ordering functions.  Additionally, significant was done to break the api scraping down into chunks to reduce the load on the local machine. 
+#### Terms <a class="anchor" id="Terms"></a>
+
+ A few essential hockey terms that will be used going forward:
+**Power Play**: period where at least one opposing player is serving a penalty and the team has the advantage of an additional skater.
+**Short Handed**: the inverse of the above, the situation of playing with one or more fewer player(s).
+**Time-On-Ice (TOI)**: the amount of time a player is involved in actual play. Also represented as percentage of a teams TOI, power play TOI, and short handed TOI. 
+**Fenwick/Corsi**: measurements of a players number of unblocked shots or total shots, respectively. 
+**Points**: can refer to either fantasy points or points as recorded by the NHL. In the later case points are either a goal or assist to a goal. 
+
+#### Processing <a class="anchor" id="Processing"></a>
+
+For this project, most of the data was in a raw format from the API and required compiling on a player-per-game instance. That was assisted by the Evolving Hockey scripts, but also required a PostgreSQL instance be stood up to house the data and easily access it, as well as create rank ordering functions. 
+
+  Additionally, significant work was done to break the API scraping down into chunks to reduce the load on the local machine. 
+
+  Given the nature of the data (a published API of official records) there were no NaN or missing values. Instead there were some errors caused by the multilevel scripting of the API which caused some redundant records. Once identified as being redundant by counting the total rows vs unique name::game_id combinations it was relatively easy to strip them out. 
 
 
 ### 2. Data Exploration<a class="anchor" id="Data_Exploration"></a>
 
-The Target Metric, Fantasy Points, are not evenly distributed as they are across a season. Below are points on a per-season basis (left) and on a per-game basis (right). This significantly complicates forecasting. 
+While fantasy points, the primary target metric, are generated by the same actions such as goals and assists in both daily and season long contests they do not have the same distribution. On a per-season basis the points are normally distributed (fig. 1) while on a per-game basis the distribution is very strongly skewed to the right (fig. 2). This is important as gradient descent models that were deployed both in the previous capstone and tested here are sensitive to the scale.
 
 
 ![scoredistro](https://github.com/mhbw/springboard/blob/master/Capstone%201/Springboard%20Capstone%20Raw%20Data%20Sets/Images/score_distro2.png)
@@ -46,31 +67,40 @@ The Target Metric, Fantasy Points, are not evenly distributed as they are across
   Time on ice (left) remains the constant for forecasting points, as  predictive and almost as correlated as core possession metric, Fenwick (right). 
 
    
- ![pbs](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/pointsbyshots.pneg.png) 
+ ![pbs](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/pointsbyshots.png) 
  
- ![sbs](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/pointsbytime.pneg.png) 
+ ![sbs](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/pointsbytime.png) 
  
  
  #### Applied Market Forecasting Theories: Moving Average Convergence   <a class="anchor" id="cor"></a>
- 
- The 'Hot Hand Theory' might be the original piece of sports analytics work, and certainly the most discussed and dissected. Here we propose a slightly different take, which is to apply financial methods of finding trends to identify values. While there is significant value in a players past overall performance, but being able to spot immediate trends creates a near term arbitrage opportunity where players are undervalued but on an upswing.  
- 
- The theory in this case is that since time on ice and time on the power play are the biggest indicators of success, rivaled only by possession metrics, if a model could detect an upward trend it could find undervalued players in advance and forecast positive events.  
- 	
- While global movements are relatively rare, line shifts are frequent, sometimes happening in-game, and identifying when a player is seeing increased deployment over their previous shifts is highly valuable. A signal metric was developed to identify those events. 
+
+The ['Hot Hand Theory'](1 https://en.wikipedia.org/wiki/Hot_hand) states that if a player recently did well in the most recent last event, they would perform well in the next. For example if a hockey player scored a goal with a shot, then their next shot would be more likely to also be a goal.  In this case the concept was to improve upon this by using an idea from financial analysis, Moving Average Convergence Divergence (MACD). 
+
+  MACD originated an indicator to reveal changes in direction or momentum in a stock price. Here the intent is for the MACD to act as an indicator of changes in direction in the important values Time on Ice or Fenwick. These features correlate strongly with overall performance, therefore an improvement in them would identify players who are undervalued as well as predict positive movement in future games.
+
+ MACD is created by subtracting the larger of two averages of the same number to create a signal. Shown in the formula here, x bar is the sample mean of the feature over the number of games chosen.
+
+![formula](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/CodeCogsEqn.gif) 
+
+  For example, with Time on Ice (TOI) we utilized the respective periods of the 5 and 20 previous games.  If the player averaged 12 minutes of TOI over the previous five games and 10 over the previous 20, this would make the player’s MACD +2. 
+
+  If the MACD is a positive value that would be considered a ‘buy’ signal, if negative it would be a ’sell’ signal. 
 
 
-Here is a random sample of players with the positive (black arrow) and negative (red arrow) signal markers overlayed on top of the moving averages (blue and dark blue lines). Note how the black arrow frequently proceeds a distinct upward trend in the moving averages. 
-	
+The next few graphs are a random sample of players with the positive signal marked by a black arrow and negative signal marked by a red one. The markers are overlaid on top of the moving averages (blue and dark blue lines). Note Dougie Hamilton on the left: the black arrow frequently proceeds a distinct upward trend in the moving averages, while the red correctly shows a negative trend.
+
  ![dh](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/DHMP_intial1.png) 
+
+ This is another fairly stable player, Nik Antropov; notice how the two positive signals, as marked by the black upwards arrow in the middle of the chart, directly preceded a long term positive trend.
  
  ![mai](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/MA_intial1.png) 
  
-That said the model can be ‘psyched’ out, as seem here, by highly uneven deployment which could be caused by a number of factors. 
-
+That said, the model can be ‘psyched’ out, as seen here with Zenon Konopka, by highly uneven deployment which could be caused by a number of factors. As seen on the left there are short term positive trends after the positive signal, but they are not maintained long term. 
+ 
  ![zk](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/ZPMP_intial1.png) 
    
-Most promising, when used in an OLS model both signals had very positive linear outcomes, adding nearly a half point, or a quarter standard deviation improvement for a positive signal. 
+In order to gauge the effectiveness of this signal a regression analysis was performed to measure the relationship between the signals and the target, dk_points, they were intended to predict. This analysis showed that if a player had a positive Fenwick signal the mean value increased by 0.4 points. Considering that the mean performance is 2 points, this is meant a positive signal forecast an average increase of 20% in overall performance. 
+ 
 
  ![ff](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/olsff.png) 
  
@@ -80,37 +110,79 @@ Most promising, when used in an OLS model both signals had very positive linear 
 
 ### 3. Model Building <a class="anchor" id="Model_Building"></a>
 
-   Initially three models were employed; Stochastic Gradient Decent, Random Forests, and Gradient Boosted Regressors. These failed in spectacular fashion. Below is a chart of the predicted vs actual values with the best performing model of that group.
+ #### Initial Failure   <a class="anchor" id="Initial _Failure"></a>
+
+The primary models employed were Stochastic Gradient Descent, Random Forests, and Gradient Boosted Regressors. They were selected for their speed, accuracy, ability to deal with overfitting, and their predictive power. Additionally the data was transformed by a scikit-learn StandardScalar.  The scaling was an important step to normalize the distribution of the data as the selected machine learning models perform worse when the data is not normally distributed.
+
+  The first iteration failed in spectacular fashion. Shown here are their error rates:
+
    
-![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/xgboost_tree.png) 
+| Metric | Stochastic Gradient Descent     | Random Forest          | Boosted Regressor  | 
+| ------------- |:-------------:| -----:| -----:| 
+| R2:    |  0.087 | -0.0000007 | **0.139** | 
+| Mean Absolute Error:    | 1.369 | 1.467 | **1.337** | 
+| Root Squared Error:     |  3.47 | 3.809 | **3.276** | 
 
- The problem here is two-fold: one, upon performance of a Variance Inflation Factor (VIF) analysis it was confirmed that the features were highly correlated amongst themselves and thus multicollinear, the models have a hard time sifting out worthwhile metrics when the target variables are so skewed and thus the results end as an amorphous blob with most values being projected as the mean with little ability to create separation. This is another charting of the results which shows this in clearer fashion.
-
-![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/blob.png) 
-
-In order to try and deal with these issues a new model was employed using Poisson Regression Model which is better suited to the purpose given the timebound nature of the contests with a discrete probability of each event occurring. While this did not yield a perfect distribution it was significantly better at predicting the range of values that might occur. 
-
-![tree](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonblob.png) 
-
+ 
+R2 shows the predictive power of a model on a 0-1.00 scale, while the other values show the average error rates. Keep in mind, that the average points per game is 2 points, so missing by 1.4-1.3 points is being off by almost a complete game’s worth of points.
 
 
+Upon inspection it appeared the problems were two-fold: first, a Variance Inflation Factor (VIF) analysis confirmed that the features were highly correlated amongst themselves and thus multicollinear. This meant that key features were repeating themselves and creating signal where there was none. This chart shows the most correlated values. A VIF score of below 5-10 is considered acceptable; of the 228 features we charted here, 7% were under 5, and 15% were below 10. 
+
+![vif](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/vif.png) 
+
+Presented another way, this is a correlation matrix showing the correlation of values amongst each other. Lighter values represent higher correlation: note how light the chart becomes in the later levels. 
+
+![hm](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/heatmap.png) 
+These are the levels most correlated with points themselves. SF and FF are ’Shots For’ and “Fenwick For’ respectively.
+
+![pv](https://github.com/mhbw/springboard/blob/master/Capstone_2/dk_pointscor.png) 
+
+The models also had a hard time creating realistic projections. The chart on the left is of one of the Gradient Boosted models, with the actual outcomes on the y axis and predicted on the x axis. Note that the measured values frequently reach above 10 or 15 points while the predicted values are locked between 0-5 points.
+
+![xgb](https://github.com/mhbw/springboard/blob/master/Capstone_2/xgb_cor.png) 
+
+ #### Moderate Success   <a class="anchor" id="Moderate_Success"></a>
+
+Given this challenge in predicting values a Poisson Regression Model was attempted as an alternative. Poisson Regressions work better as they are designed to fit a discrete probability distribution of the rate of events. Wikipedia explains these as the “probability of a given number of events occurring in a fixed interval of time ... examples that may follow a [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) include the number of phone calls received by a call center per hour.”Below are the predictions vs actual again.
+
+Chart
+
+The error metrics, as laid out below, were not that that much better than the XGBoost model. 
+
+| Metric | Poisson Regression          | Boosted Regressor  | 
+| ------------- |-----:| -----:| 
+| R2:    |  **0.14** | 0.139 | 
+| Mean Absolute Error:    | 1.345 | **1.337**  | 
+| Root Squared Error:     |  3.33 | **3.32** | 
+
+The primary reason the Poisson model was an improvement was the projected values were more in line with expectations.  The mean value was still about 2 points, but the standard deviation was 0.75 instead of 0.5. This point spread more resembled what has been observed in the past. Note the plotting here as opposed to the one a few slides ago for the boosted regressor.
+
+
+
+![pois](https://github.com/mhbw/springboard/blob/master/Capstone_2/poisvsboost.png) 
 
 ### 4. Application: FantasyCruncher <a class="anchor" id="Application"></a>
 
-In order to further validate the success of this program the model was build it was tested using FantasyCruncher, a tool which is considered an essential lineup optimizer by most daily fantasy sports professionals. This site does the difficult leg work of maximizing points per lineup, a computationally difficult problem, while allowing you to easily import your own models and calculate line performance based on those. 
+Given the capstone’s primary objective of being able to supply accurate projections for daily fantasy contests, having a predictive model was not enough. The model should be able to predict actual performance in daily contests, which presented its own challenges: 1) companies do not regularly publish contest results, and 2) the NHL hockey season had not begun so live testing was not possible. 
 
-Five days were chosen at random, three of which had data in FantasyCruncher, 2/23/2016, 5/11/2016, and 10/27/2018. Then the model was imported and then compared to a generic projection provided by FantasyCruncher.
+  To circumvent that a test was devised using FantasyCruncher, a tool which is considered an essential lineup optimizer by most daily fantasy sports professionals. FantasyCruncher assists in three ways: 1) it has a historical database of players, “LineupRewind”, that lets you see previous player performance alongside their own models, 2) the site allows players to upload their own models, and 3) can create multiple lineups on any given day using either FantasyCruncher or player models. 
 
- In naïve contests without player input, the model did not perform significantly differently than the off-the-shelf projections, and in fact was de-prioritized by the platform. Below is a comparison of the naïve lineups for the model (upper left) and FantasyCruncher (lower right): 
+  For the back test five days were chosen at random, three of which had data in FantasyCruncher, 2/23/2016, 5/11/2016, and 10/27/2018. The model was imported for those dates, and lineups were created using both the model and the generic projections provided by FantasyCruncher. A lineup can be considered successful if it exceeded 35 points in one of these simulations, which is the typical minimum value needed to cash and earn a player money. 
+
+   In naïve contests, those without human input, the model did not out-perform the off-the-shelf projections, and in fact were rarely selected by the platform. Below is a comparison of the naïve lineups (upper) and FantasyCruncher (lower).
+
+
+
  ![nm](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive1.png) 
 
 ![fc1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive2.png) 
 
+Again, the typical lower bound for cashing in in a contest is 35 points so given that target the FantasyCruncher lineup would have succeeded while the naïve model would not. 
+
  
-The story is wildly different when there is minimal participation by a human. In these contests I told FantasyCruncher to limit the goalies to two options, chosen based on being the starting goalie for the team favored to win by the Las Vegas Casinos. I set the same assignment for the FantasyCruncher model but the scores were wildly different in this case. The Non-Naïve model is on the left, FantasyCruncher on the right.
 
-In this case both set of contests would have cashed but the model would take a much higher prize while the in-house version would have scraped by.
-
+That said, the story is wildly different given even minimal human supervision. In these examples, FantasyCruncher was limited to two options in the goalie position, selected solely based on being the starting goalie for the team most favored to win by the Las Vegas Casinos. I set the same assignment for the FantasyCruncher model but the scores were wildly different in this case. The Non-Naïve model (upper) would have done significantly better than FantasyCruncher alone (lower).
  ![nm1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/non_naive1.png) 
 
 ![fc2](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonnaive2.png) 
@@ -120,23 +192,25 @@ In this case both set of contests would have cashed but the model would take a m
 
 ### 5. Conclusions <a class="anchor" id="Conclusions"></a>
 
-While the model isn’t predictive enough to be a stand alone product, minimal human coaching can make it viable. 
-
-Significant challenges remain in finding more predictive features that aren’t multicollinear or otherwise reproductions of basic stats. Appropriate model selections for the type of distribution are important as well.
-
-The moving averages have some promise, and perhaps an even simpler model based on those and core features might perform just as well. 
+While the model isn’t predictive enough to be a stand alone product, minimal human coaching can make it viable. Significant challenges remain in finding more predictive features that aren’t multicollinear or otherwise reproductions of basic stats. Appropriate model selection for the type of distribution are important as well, and perhaps finding a more varied stand in for the target variable would help the model better be able to pick out the signal from the noise.  The moving averages have some promise, and perhaps an even simpler model based on those and core features might perform just as well. 
 
 
 
 #### Extensions<a class="anchor" id="Future_Work"></a>
 
- Further apply Las Vegas odds: Perhaps use those as a feature to inform models alongside the core metrics.
- 
-Consider strength of opponent metrics; marry the trends of the opposing teams to the basic stats. Perhaps facing tougher teams would significantly impact players.
+Given additional time to do further iterations of this capstone, there are a number of additional angles that could be pursued to add further value or otherwise explore for new features. Four stand out as primarily being viable:
 
- Attempt an even simpler model with more stripped out features. Attempts were made based on  position but some a revision might be in order with a core set of numbers.
+1.Further apply Las Vegas odds: use the Vegas lines as direct inputs to create features such as percentage likelihood of a team generating more goals and therefore points.
+
+2.Consider strength of opponent metrics; marry the trends of the opposing teams to the basic stats. For example, similar to how a player might have recently seen a positive MACD signal, playing against a team with a strong defensive signal could counter that and forecast a decrease in goals scored.
+
+3.Attempt another Poisson model with more stripped out features. Models were attempted based on position but perhaps a KNN to differentiate valuable players and only project their performance would be lower variance with more upside.
+
+4.Find ways to increase the points spread in the target variable: a more naturally occurring normal distribution might also increase accuracy in predictions. 
 
 
 #### Acknowledgments <a class="anchor" id="Acknowledgments"></a>
 
-   I’d like to thank both my mentor for this course, Alex Rutherford, and my mentor through out my data science career, Michael Burton, for helping along the way to guide my progress, point out areas of improvement, and generally being great sounding boards. This project would be much less successful without them. 
+There were many reviewers who added edits and helped greatly improve this presentation. Thanks to Marcia Burchby,  Dayna Clark, Jimena Gargiulo, Megan Ogle and George Wood, among others.
+
+But I’d primarily like to thank both my mentor for this course, Alex Rutherford, and my mentor throughout my data science career, Michael Burton, for helping along the way to guide my progress, point out areas of improvement, and generally being great sounding boards. This project would be much less successful without them. 
