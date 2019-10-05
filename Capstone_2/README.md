@@ -175,18 +175,18 @@ Given the capstone’s primary objective of being able to supply accurate projec
 
 
 
- ![nm](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive1.png&s=200) 
+ ![nm](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive1.png) 
 
-![fc1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive2.png&s=200) 
+![fc1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/naive2.png) 
 
 Again, the typical lower bound for cashing in in a contest is 35 points so given that target the FantasyCruncher lineup would have succeeded while the naïve model would not. 
 
  
 
 That said, the story is wildly different given even minimal human supervision. In these examples, FantasyCruncher was limited to two options in the goalie position, selected solely based on being the starting goalie for the team most favored to win by the Las Vegas Casinos. I set the same assignment for the FantasyCruncher model but the scores were wildly different in this case. The Non-Naïve model (upper) would have done significantly better than FantasyCruncher alone (lower).
- ![nm1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/non_naive1.png&s=200) 
+ ![nm1](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/non_naive1.png) 
 
-![fc2](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonnaive2.png&s=200) 
+![fc2](https://github.com/mhbw/springboard/blob/master/Capstone_2/images/nonnaive2.png) 
 
  
 
