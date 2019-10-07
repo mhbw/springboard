@@ -112,7 +112,7 @@ In order to gauge the effectiveness of this signal a regression analysis was per
 
  #### Initial Failure   <a class="anchor" id="Initial _Failure"></a>
 
-The primary models employed were Stochastic Gradient Descent, Random Forests, and Gradient Boosted Regressors. They were selected for their speed, accuracy, ability to deal with overfitting, and their predictive power. Additionally the data was transformed by a scikit-learn StandardScalar.  The scaling was an important step to normalize the distribution of the data as the selected machine learning models perform worse when the data is not normally distributed.
+The primary models employed were Stochastic Gradient Descent, Random Forests, and Gradient Boosted Regressors. They were selected for their speed, accuracy, ability to deal with overfitting, and their predictive power. Additionally the data was transformed by a scikit-learn StandardScalar. The scaling was an important step to normalize the distribution of the data which improves the performance of these models. 
 
   The first iteration failed in spectacular fashion. Shown here are their error rates:
 
